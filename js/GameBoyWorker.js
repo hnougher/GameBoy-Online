@@ -96,10 +96,10 @@ onmessage = function( event )
 // CPU timing loop
 var frameStart;
 var pauseLength;
+var frameFinished;
 /** This is for fastest possible since it will only react to events at one sec intervals */
 /*function continueCPU()
 {
-	var frameFinished;
 	var blockMustBreakTime = frameStart + 1000;
 
 	for( ; ; )
@@ -130,8 +130,6 @@ var pauseLength;
 /** This one allows events after every frame */
 function continueCPU()
 {
-	var frameFinished;
-
 	// Run the frame
 	gameboy.run();
 	
@@ -152,18 +150,21 @@ function continueCPU()
 
 // ######################## Function from main thread #########################
 // Write to virtual terminal
-function cout( message, colorIndex )
-{
+function cout(message, colorIndex) {
 	postMessage([ "cout", message, colorIndex ]);
 	dump( message + "\n" );
-};
+}
 
 // Update the canvas
-function update_display()
-{
+function update_display() {
 	sentFrames++;
 	postMessage([ "update_display", gameboy.canvasBuffer ]);
-};
+}
+
+// Pause Function Forward
+function pause() {
+	postMessage([ "pause" ]);
+}
 
 
 var HNOpcode_Usage = new Array(0x1FF);

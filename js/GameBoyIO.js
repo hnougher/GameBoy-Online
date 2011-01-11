@@ -25,6 +25,8 @@ var settings = [						//Some settings.
 	false,								//Render nearest-neighbor scaling in javascript?
 	false								//Disallow typed arrays?
 ];
+var gameboyStopped = true;
+
 function start(canvas, canvasAlt, ROM) {
 	clearLastEmulation();
 	gameboy = new GameBoyCore(canvas, canvasAlt, ROM);
@@ -35,13 +37,15 @@ function continueCPU() {
 	gameboy.run();
 }
 function run() {
-	if (typeof gameboy == "object" && gameboy != null && (gameboy.stopEmulator & 2) == 2) {
-		gameboy.stopEmulator &= 1;
-		gameboy.lastIteration = new Date().getTime();
-		cout("Starting the iterator.", 0);
-		gbRunInterval = setInterval(continueCPU, settings[20]);
+	if (gameboy && gameboyStopped) {
+		gameboyStopped = false;
+		gameboy.resumeEmulator();
+		//gameboy.stopEmulator &= 1;
+		//gameboy.lastIteration = new Date().getTime();
+		//cout("Starting the iterator.", 0);
+		//gbRunInterval = setInterval(continueCPU, settings[20]);
 	}
-	else if ((gameboy.stopEmulator & 2) == 0) {
+	else if( !gameboyStopped ) {
 		cout("The GameBoy core is already running.", 1);
 	}
 	else {
@@ -49,10 +53,10 @@ function run() {
 	}
 }
 function pause() {
-	if (typeof gameboy == "object" && gameboy != null && (gameboy.stopEmulator & 2) == 0) {
+	if( gameboy && !gameboyStopped ) {
 		clearLastEmulation();
 	}
-	else if ((gameboy.stopEmulator & 2) == 2) {
+	else if( gameboyStopped ) {
 		cout("GameBoy core has already been paused.", 1);
 	}
 	else {
@@ -60,9 +64,11 @@ function pause() {
 	}
 }
 function clearLastEmulation() {
-	if (typeof gameboy == "object" && gameboy != null && (gameboy.stopEmulator & 2) == 0) {
-		clearInterval(gbRunInterval);
-		gameboy.stopEmulator |= 2;
+	if( gameboy && !gameboyStopped ) {
+		//clearInterval(gbRunInterval);
+		//gameboy.stopEmulator |= 2;
+		gameboyStopped = true;
+		gameboy.stopEmulator();
 		cout("The previous emulation has been cleared.", 0);
 	}
 	else {

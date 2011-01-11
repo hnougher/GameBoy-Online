@@ -530,7 +530,7 @@ GameBoyCore.prototype.runInterrupt = function (interrupts) {
 //GameBoyCore.prototype.runInterrupt = function () {
 	var testbit = 1;
 	var interrupts = this.memory[0xFFFF] & this.memory[0xFF0F];
-	while (bitShift < 5) {
+	for (var bitShift = 0; bitShift < 5; bitShift++) {
 		//Check to see if an interrupt is enabled AND requested.
 		if ((testbit & interrupts) == testbit) {
 			this.IME = false;					//Reset the interrupt enabling.

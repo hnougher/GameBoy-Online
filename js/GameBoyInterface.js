@@ -19,11 +19,11 @@ var GameBoyCore = function( canvas, canvasAlt, ROM )
 	this.init( canvas, canvasAlt, ROM  );
 };
 
-Scale2x.setCallback( function( imageData ){
+/*Scale2x.setCallback( function( imageData ){
 	gameboy.canvas.height = imageData.height;
 	gameboy.canvas.width = imageData.width;
 	gameboy.ctx.putImageData( imageData, 0, 0 );
-	});
+	});*/
 
 GameBoyCore.prototype.onmessage = function(event)
 {
@@ -42,6 +42,10 @@ GameBoyCore.prototype.onmessage = function(event)
 		case "HNOpcode_Usage":
 			HNOpcode_Usage = args[1];
 			update_HNOpcode_Usage();
+			break;
+		
+		case "pause":
+			pause();
 			break;
 	}
 };
