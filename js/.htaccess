@@ -1,0 +1,3 @@
+<Files GameBoyCore.js>
+	AddType application/x-httpd-php .js
+</Files>
