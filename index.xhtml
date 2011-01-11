@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" manifest="http://www.grantgalitz.org/gameboy/gameboy.manifest">
+<head>
+<style type="text/css">@import url("css/GameBoy.css.php");</style>
+<script type="text/javascript">
+DEBUG_MESSAGES = true;
+DEBUG_WINDOWING = false;
+</script>
+
+<script type="text/javascript" src="js/scale2x/HNScale2x.js"></script>
+<script type="text/javascript" src="js/scale2x/Scale2x_Worker.js"></script>
+
+<script type="text/javascript" src="js/other/windowStack.js"></script>
+<script type="text/javascript" src="js/other/terminal.js"></script>
+<script type="text/javascript" src="js/other/opacity.js"></script>
+<script type="text/javascript" src="js/other/gui.js"></script>
+<script type="text/javascript" src="js/other/BMPCanvas.js"></script>
+<script type="text/javascript" src="js/other/base64.js"></script>
+<script type="text/javascript" src="js/other/transportHandler.js"></script>
+<script type="text/javascript" src="js/other/waveAudio.js"></script>
+<script type="text/javascript" src="js/other/audioRunner.js"></script>
+<script type="text/javascript" src="js/other/json2.js"></script>
+<!-- script type="text/javascript" src="js/GameBoyCore.js"></script -->
+<script type="text/javascript" src="js/GameBoyInterface.js"></script>
+<script type="text/javascript" src="js/GameBoyIO.js"></script>
+
+<title>GameBoy Online</title>
+</head>
+
+<body>
+<div id="GameBoy" class="window">
+	<div class="menubar">
+		<span id="GameBoy_file_menu">File</span>
+		<span id="GameBoy_settings_menu">Settings</span>
+		<span id="GameBoy_view_menu">View</span>
+		<span id="GameBoy_about_menu">About</span>
+	</div>
+	<div id="gfx">
+		<canvas width="160" height="144" id="gbCanvas"></canvas>
+		<!-- div id="canvasAltContainer"></div>
+		<span id="title">GameBoy</span>
+		<span id="port_title">Online</span -->
+	</div>
+</div>
+<div id="terminal" class="window">
+	<div id="terminal_output"></div>
+	<div class="button_rack">
+		<button id="terminal_clear_button" class="left">Clear Messages</button>
+		<button id="terminal_close_button" class="right">Close Terminal</button>
+	</div>
+</div>
+<div id="about" class="window">
+	<div id="about_message"><h1>GameBoy Online</h1>
+		<p>This is a GameBoy and GameBoy Color emulator written in JavaScript, ported from various existing projects.</p>
+		<p>The audio backend attempts to use the Mozilla proprietary mozWriteAudio first, then if necessary falls back to
+		 WAV PCM formatted audio in browsers that implement it through data URIs.</p>
+		<p>A browser that can use the CanvasPixelArray implementation of the canvas element or can display BMP formatted
+		 images through data URIs is required to run the graphics display.</p>
+		<p>Save states are implemented through the window.localStorage object, and are serialized/deserialized through
+		 JSON. In order for save states to work properly on most browsers, you need set the maximum size limit for DOM
+		 storage higher, to meet the needs of the emulator's save data size.</p>
+		<p>For the references below, this site is not affiliated with either of them , nor endorses any actions by them.
+		 Please note that downloading and obtaining GameBoy and GameBoy Color rom files may entail illegal activities, and
+		 as such are not endorsed and are done at your own risk.</p>
+		<p>For more information about jsGB and its source code, visit
+		 <a href="http://codebase.es/jsgb/" target="_blank">http://codebase.es/jsgb/</a>.</p>
+		<p>For more information about MeBoy and its source code, visit
+		 <a href="http://arktos.se/meboy/" target="_blank">http://arktos.se/meboy/</a>.</p>
+	</div>
+	<div class="button_rack">
+		<button id="about_close_button" class="center">Close Popup</button>
+	</div>
+</div>
+<div class="window" id="settings">
+	<div id="toggle_settings">
+		<div class="setting"><span>Enable Sound  (Experimental):</span><input type="checkbox" checked="checked" id="enable_sound"/></div>
+		<div class="setting"><span>Force Mono Sound:</span><input type="checkbox" id="enable_mono_sound"/></div>
+		<div class="setting"><span>GB mode has priority over GBC mode:</span><input type="checkbox" id="disable_colors"/></div>
+		<div class="setting"><span>Use GBC BIOS (Note: Overrides GB priority):</span><input type="checkbox" checked="checked" id="enable_gbc_bios"/></div>
+		<div class="setting"><span>The data URI BMP method has priority over the canvas tag method:</span><input type="checkbox" id="bmp_method"/></div>
+		<div class="setting"><span>Auto frame skip:</span><input type="checkbox" id="auto_frameskip" checked="checked"/></div>
+		<div class="setting"><span>Override ROM only cartridge typing to MBC1:</span><input type="checkbox" checked="checked" id="rom_only_override"/></div>
+		<div class="setting"><span>Always allow reading and writing to the MBC banks:</span><input type="checkbox" checked="checked" id="mbc_enable_override"/></div>
+		<div class="setting"><span>Colorize Classic GameBoy Palettes:</span><input type="checkbox" checked="checked" id="enable_colorization"/></div>
+		<div class="setting"><span>Minimal view on fullscreen:</span><input type="checkbox" checked="checked" id="do_minimal"/></div>
+	</div>
+	<div class="button_rack">
+		<button id="settings_close_button" class="center">Close Settings</button>
+	</div>
+</div>
+<ul class="menu" id="GameBoy_file_popup">
+	<li>Open As
+		<ul class="menu">
+			<li id="data_uri_clicker">Base 64 Encoding</li>
+			<li id="external_file_clicker">URL Address</li>
+			<li id="internal_file_clicker">Local File</li>
+			<li id="open_saved_clicker">Saved State
+				<ul id="save_states" class="menu"></ul>
+			</li>
+		</ul>
+	</li>
+	<li id="save_state_clicker">Save State</li>
+	<li id="restart_cpu_clicker">Restart</li>
+	<li id="run_cpu_clicker">Resume</li>
+	<li id="kill_cpu_clicker">Pause</li>
+</ul>
+<ul class="menu" id="GameBoy_view_popup">
+	<li id="view_terminal">Terminal</li>
+	<li id="view_instructions">Instructions</li>
+	<li id="view_fullscreen">Fullscreen Mode</li>
+</ul>
+<div id="input_select" class="window">
+	<form>
+		<input type="file" id="local_file_open"/>
+	</form>
+	<div class="button_rack">
+		<button id="input_select_close_button" class="center">Close File Input</button>
+	</div>
+</div>
+<div id="instructions" class="window">
+	<div id="keycodes">
+		<h1>Keyboard Controls:</h1>
+		<ul>
+			<li>X is A.</li>
+			<li>Z is B.</li>
+			<li>Shift is Select.</li>
+			<li>Enter is Start.</li>
+			<li>The d-pad is the control pad.</li>
+			<li>The escape key (esc) allows you to get in and out of fullscreen mode.</li>
+		</ul>
+	</div>
+	<div class="button_rack">
+		<button id="instructions_close_button" class="center">Close Instructions</button>
+	</div>
+</div>
+<div id="fullscreenContainer">
+	<canvas id="fullscreen" class="maximum" width="160" height="144"></canvas>
+</div>
+<script type="text/javascript">
+try {
+	addEvent("DOMContentLoaded", document, windowingPreInitUnsafe);
+	addEvent("readystatechange", document, windowingPreInitSafe);
+	addEvent("load", document, windowingPreInitUnsafe);
+}
+catch (error) {
+	alert("Please use a web browser that supports DOM Level 3, XHTML5, and CSS3.\r\nThanks :)");
+}
+</script>
+<div id="HNDebug" style="font-family: monospace"></div>
+<div id="HNDebug2" style="font-family: monospace"></div>
+<script><![CDATA[
+	var HNDebug = document.getElementById("HNDebug");
+	var HNDebug2 = document.getElementById("HNDebug2");
+	
+	var HNOpcode_Usage = new Array(0x1FF);
+	for( var i = 0; i <= 0x1FF; i++ )
+		HNOpcode_Usage[i] = 1;
+	
+	var checkedOps = new Array(
+	/*	0, 1, 2, 3, 4, 5, 6, 7,		8, 9, A, B, C, D, E, F	*/
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //0
+		0, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //1
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //2
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //3
+		
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //4
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //5
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //6
+		2, 2, 2, 2, 2, 2, 0, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //7
+		
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //8
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //9
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //A
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //B
+		
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //C
+		2, 2, 0, 0, 0, 0, 0, 2,		2, 2, 0, 0, 0, 0, 0, 2,  //D
+		2, 2, 2, 2, 2, 2, 2, 2,		0, 0, 1, 0, 0, 0, 0, 2,  //E
+		2, 2, 0, 0, 0, 0, 0, 2,		0, 0, 1, 0, 0, 0, 0, 2,  //F
+		
+/*	CB	0, 1, 2, 3, 4, 5, 6, 7,		8, 9, A, B, C, D, E, F	*/
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //0
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //1
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //2
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //3
+		
+		1, 1, 1, 1, 1, 1, 1, 1,		0, 0, 0, 0, 0, 0, 0, 0,  //4
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //5
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //6
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //7
+		
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //8
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //9
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //A
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //B
+		
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //C
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //D
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //E
+		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0  //F
+		);
+	
+	var update_HNOpcode_Usage = function()
+	{
+		var tmp = "<table><tr style='background: #FFF'><td></td>";
+		for( var j = 0; j <= 0xF; j++ )
+			tmp += "<td>" + j.toString(16) + "</td>";
+		tmp += "</tr>";
+		
+		var maxUsage = 0;
+		var maxUsageRed = 0;
+		var HNOpcodeCounter = 0;
+		for( var i = 0; i <= 0x1FF; i++ )
+		{
+			HNOpcodeCounter += HNOpcode_Usage[i];
+			maxUsage = Math.max( HNOpcode_Usage[i], maxUsage );
+			if( !checkedOps[i] )
+				maxUsageRed = Math.max( HNOpcode_Usage[i], maxUsageRed );
+		}
+		maxUsage /= 255;
+		maxUsageRed /= 255;
+		
+		for( var i = 0; i <= 0x1FF; )
+		{
+			tmp += "<tr><td style='background: #FFF'>" + i.toString(16) + " </td>";
+			for( var j = 0; j <= 0xF; i++, j++ )
+			{
+				var val = HNOpcode_Usage[i] / maxUsage;
+				var valRed = HNOpcode_Usage[i] / maxUsageRed;
+				var valRounded = Math.floor( val );
+				var valRoundedRed = Math.floor( valRed );
+				var color;
+				if( checkedOps[i] == 2 )
+					color = [ 0, 127 + Math.floor( valRounded / 2 ), 0 ];
+				else
+					color = [ valRoundedRed, 0, 255 - valRoundedRed ];
+				tmp += "<td style='background: rgb(" + color + ")'>" + ( HNOpcode_Usage[i] - 1 ) + "</td>";
+			}
+			tmp += "</tr>";
+		}
+		tmp += "</table>";
+		HNDebug.innerHTML = tmp;
+		
+		HNDebug2.innerHTML = HNOpcodeCounter + " or " + Math.log( HNOpcodeCounter ).toPrecision(3);
+	};
+]]></script>
+</body></html>

@@ -20,30 +20,26 @@ GameBoyCore.prototype.initLCD = function () {
 		}
 	}
 	
+	//Create a white screen
+	this.drewBlank == 0;
+	this.DisplayShowOff();
 
-
-
-
-		//Create a white screen
-		this.drewBlank == 0;
-		this.DisplayShowOff();
-
-		/* This will be done in update_display so not needed here.
-		var canvasBufferData = this.canvasBuffer.data;
-		for( var i = 0; i < canvasBufferData.length; i++ )
-			canvasBufferData[i] = 0xFF;*/
-		
-		// Clear fameBuffer to White
-		var frameBuffer = this.frameBuffer;
-		for( var i = 0; i < frameBuffer.length; i++ )
-			frameBuffer[i] = 0x00FFFFFF;
-		
-		// Update Display
-		update_display();
-		
-		// Legacy
-		/** @todo This variable is useless when in Workers. Remove it. */
-		this.canvasFallbackHappened = false;
+	/* This will be done in update_display so not needed here.
+	var canvasBufferData = this.canvasBuffer.data;
+	for( var i = 0; i < canvasBufferData.length; i++ )
+		canvasBufferData[i] = 0xFF;*/
+	
+	// Clear fameBuffer to White
+	var frameBuffer = this.frameBuffer;
+	for( var i = 0; i < frameBuffer.length; i++ )
+		frameBuffer[i] = 0x00FFFFFF;
+	
+	// Update Display
+	update_display();
+	
+	// Legacy
+	/** @todo This variable is useless when in Workers. Remove it. */
+	this.canvasFallbackHappened = false;
 }
 
 GameBoyCore.prototype.initializeLCDController = function () {
