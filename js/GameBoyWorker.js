@@ -55,15 +55,12 @@ var gbRunTimeout;
 
 
 var inMessages = 0;
-onmessage = function( event )
-{
+onmessage = function (event) {
 	inMessages++;
 	var args = event.data;
-	switch( args[0] )
-	{
+	switch (args[0]) {
 		case "init":
-			gameboy = new GameBoyCore( args[2], args[1] );
-			dump( "imageData=" + args[2].width + "\n" );
+			gameboy = new GameBoyCore(args[1]);
 			break;
 		
 		case "start":
@@ -88,7 +85,7 @@ onmessage = function( event )
 			break;
 		
 		case "JoyPadEvent":
-			gameboy.JoyPadEvent( args[1], args[2] );
+			gameboy.JoyPadEvent(args[1], args[2]);
 			break;
 	}
 };
@@ -155,10 +152,16 @@ function cout(message, colorIndex) {
 	dump( message + "\n" );
 }
 
+// Draw Blank on the canvas
+function draw_blank() {
+	sentFrames++;
+	postMessage([ "draw_blank" ]);
+}
+
 // Update the canvas
 function update_display() {
 	sentFrames++;
-	postMessage([ "update_display", gameboy.canvasBuffer ]);
+	postMessage([ "update_display", gameboy.frameBuffer ]);
 }
 
 // Pause Function Forward

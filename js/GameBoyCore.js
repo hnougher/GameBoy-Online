@@ -41,11 +41,7 @@ ob_start('ob_gzhandler');
 			- Add some more MBC support (I haven't seen any game except one so far that uses an unsupported MBC)
 				- MBC7, TAMA5, HuC1, etc.
  **/
-function GameBoyCore(imageData, ROMImage) {
-	/*this.canvas = canvas;						//Canvas DOM object for drawing out the graphics to.
-	this.canvasAlt = canvasAlt;					//Image DOM object for drawing out the graphics to as an alternate means.
-	this.canvasFallbackHappened = false;		//Used for external scripts to tell if we're really using the canvas or not (Helpful with fullscreen switching).
-	this.drawContext = null;*/					// LCD Context
+function GameBoyCore(ROMImage) {
 	this.ROMImage = ROMImage;					//The game's ROM. 
 	this.ROM = [];								//The full ROM file dumped to an array.
 	this.inBootstrap = true;					//Whether we're in the GBC boot ROM.
@@ -205,11 +201,6 @@ function GameBoyCore(imageData, ROMImage) {
 	this.tileData = [];					// tile data arrays
 	this.frameBuffer = [];
 	//this.scaledFrameBuffer = [];
-	//this.canvasBuffer;							//HN: ImageData
-	this.canvasBuffer = imageData;					//HN: ImageData
-	this.canvasBufferData = imageData.data;			//HN: Array or Uint8Array
-	if( supportTypedArray )
-		this.canvasBufferData32 = new Uint32Array( imageData.data.buffer );		//HN: Uint32Array if available
 	this.gbcRawPalette = [];
 	this.tileCount = 384;				//GB: 384, GBC: 384 * 2
 	this.tileCountInvalidator = this.tileCount * 4;

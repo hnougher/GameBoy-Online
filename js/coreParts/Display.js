@@ -23,19 +23,11 @@ GameBoyCore.prototype.initLCD = function () {
 	//Create a white screen
 	this.drewBlank == 0;
 	this.DisplayShowOff();
-
-	/* This will be done in update_display so not needed here.
-	var canvasBufferData = this.canvasBuffer.data;
-	for( var i = 0; i < canvasBufferData.length; i++ )
-		canvasBufferData[i] = 0xFF;*/
 	
 	// Clear fameBuffer to White
 	var frameBuffer = this.frameBuffer;
 	for( var i = 0; i < frameBuffer.length; i++ )
 		frameBuffer[i] = 0x00FFFFFF;
-	
-	// Update Display
-	update_display();
 	
 	// Legacy
 	/** @todo This variable is useless when in Workers. Remove it. */
@@ -154,6 +146,7 @@ GameBoyCore.prototype.initializeLCDController = function () {
 						//We need to skip 1 or more scan lines:
 						parentObj.LCDCONTROL[parentObj.actualScanLine](parentObj);	//Scan Line and STAT Mode Control 
 					}
+					parentObj.drawToCanvas();	//Display frame
 				}
 			}
 		}
@@ -171,26 +164,7 @@ GameBoyCore.prototype.initializeLCDController = function () {
 */
 GameBoyCore.prototype.DisplayShowOff = function () {
 	if (this.drewBlank == 0) {
-		var canvasBufferData;
-		var newVal;
-		
-		// If Typed Array is supported then this is much faster
-		if (supportTypedArray) {
-			canvasBufferData = this.canvasBufferData32;
-			newVal = 0xFFFFFFFF;
-		}
-		else {
-			canvasBufferData = this.canvasBufferData;
-			newVal = 0xFF;
-		}
-		
-		// Set every item in array to all ones
-		for( var i = 0; i < canvasBufferData.length; i++ )
-			canvasBufferData[i] = newVal;
-		
-		// Update Display
-		update_display();
-		
+		draw_blank();
 		this.drewBlank = 2;
 	}
 }
@@ -202,31 +176,7 @@ GameBoyCore.prototype.DisplayShowOff = function () {
 GameBoyCore.prototype.drawToCanvas = function () {
 	//Draw the frame buffer to the canvas:
 	if (settings[4] == 0 || this.frameCount > 0) {
-		//Copy and convert the framebuffer data to the CanvasPixelArray format.
-		var canvasData = this.canvasBufferData;
-		var frameBuffer = this.frameBuffer;
-		
-		/*if( supportTypedArray )
-		{
-			canvasData = this.canvasBufferData32;
-			// This array is ABGR for some reason
-			for( var i = 0; i < frameBuffer.length; i++ )
-				canvasData[i] = (frameBuffer[i] & 0x00FFFFFF) | 0xFF000000;
-		}
-		else*/
-		{
-			var canvasIndex = 0;
-			for( var i = 0; i < frameBuffer.length; i++ )
-			{
-				canvasData[canvasIndex++] = (frameBuffer[i] >> 16) & 0xFF;	//Red
-				canvasData[canvasIndex++] = (frameBuffer[i] >> 8) & 0xFF;	//Green
-				canvasData[canvasIndex++] = frameBuffer[i] & 0xFF;			//Blue
-				canvasIndex++; // Alpha is ignored
-			}
-		}
-		
 		//Draw out the CanvasPixelArray data:
-		//this.drawContext.putImageData(this.canvasBuffer, 0, 0);
 		update_display();
 		if (settings[4] > 0) {
 			//Increment the frameskip counter:

@@ -639,9 +639,9 @@ GameBoyCore.prototype.updateCore = function () {
 		if (this.emulatorTicks >= settings[13]) {
 			if ((this.stopEmulator & 1) == 0) {	//Make sure we don't overdo the audio.
 				this.playAudio();				//Output all the samples built up.
-				if (this.drewBlank == 0) {		//LCD off takes at least 2 frames.
-					this.drawToCanvas();		//Display frame
-				}
+				//if (this.drewBlank == 0) {		//LCD off takes at least 2 frames.
+				//	this.drawToCanvas();		//Display frame
+				//}
 			}
 			this.stopEmulator |= 1;				//End current loop.
 			this.emulatorTicks = 0;

@@ -16,7 +16,7 @@ var GameBoyCore = function( canvas, canvasAlt, ROM )
 	this.canvas.style.visibility = "visible";
 	
 	// Initialize it
-	this.init( canvas, canvasAlt, ROM  );
+	this.worker.postMessage(["init", ROM]);
 };
 
 /*Scale2x.setCallback( function( imageData ){
@@ -34,8 +34,23 @@ GameBoyCore.prototype.onmessage = function(event)
 			cout( args[1], args[2] );
 			break;
 		
+		case "draw_blank":
+			this.ctx.fillStyle = "white";
+			this.ctx.fillRect(0, 0, 160, 144);
+			break;
+		
 		case "update_display":
-			this.ctx.putImageData( args[1], 0, 0 );
+			var frameBuffer = args[1];
+			var imageData = this.ctx.getImageData(0, 0, 160, 144);
+			var canvasData = imageData.data;
+			var canvasIndex = 0;
+			for (var i = 0; i < frameBuffer.length; i++) {
+				canvasData[canvasIndex++] = (frameBuffer[i] >> 16) & 0xFF;	//Red
+				canvasData[canvasIndex++] = (frameBuffer[i] >> 8) & 0xFF;	//Green
+				canvasData[canvasIndex++] = frameBuffer[i] & 0xFF;			//Blue
+				canvasIndex++; // Alpha is ignored
+			}
+			this.ctx.putImageData(imageData, 0, 0);
 			//Scale2x.scale2xID( args[1], "gameboy" );
 			break;
 		
@@ -53,15 +68,6 @@ GameBoyCore.prototype.onmessage = function(event)
 GameBoyCore.prototype.onerror = function(error)
 {
 	throw error;
-};
-
-GameBoyCore.prototype.init = function( canvas, canvasAlt, ROM )
-{
-	// We cannot pass DOM objects through to worker
-	// But we can pass an ImageData object or arrays
-	var imageData = document.createElement("canvas").getContext("2d").createImageData( 160, 144 );
-	
-	this.worker.postMessage(["init", ROM, imageData]);
 };
 
 GameBoyCore.prototype.start = function()
