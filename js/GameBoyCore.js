@@ -326,8 +326,7 @@ GameBoyCore.prototype.usbtsb = function (ubyte) {
 * 
 * Note: This op is hard coded in OPCODEs 0x20, 0x28, 0x30 and 0x38 since they are very hot paths.
 */
-GameBoyCore.prototype.UI8_to_SI8 = function( ubyte )
-{
+GameBoyCore.prototype.UI8_to_SI8 = function (ubyte) {
 	return (ubyte & 0x7F) - (ubyte & 0x80);
 };
 

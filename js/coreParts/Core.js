@@ -449,10 +449,10 @@ GameBoyCore.prototype.run = function () {
 					//Execute Interrupt:
 					// Hugh added an extra check to this if in case an interrupt is fake then made the
 					// value get directly passed to interupt handler
-					var interrupts = this.memory[0xFFFF] & this.memory[0xFF0F];
-					if( interrupts & 0x1F )
-						this.runInterrupt( interrupts );
+					if (this.memory[0xFFFF] & this.memory[0xFF0F] & 0x1F) {
+						this.runInterrupt(this.memory[0xFFFF] & this.memory[0xFF0F]);
 					//	this.runInterrupt();
+					}
 					
 					//Timing:
 					this.updateCore();
@@ -478,6 +478,7 @@ GameBoyCore.prototype.run = function () {
 GameBoyCore.prototype.executeIteration = function () {
 	//Iterate the interpreter loop:
 	var op = 0;
+	var interrupts = 0;
 	while (this.stopEmulator == 0) {
 		//Fetch the current opcode.
 		op = this.memoryReader[this.programCounter](this, this.programCounter);
@@ -487,8 +488,6 @@ GameBoyCore.prototype.executeIteration = function () {
 			this.programCounter++;
 		}
 		this.skipPCIncrement = false;
-		
-		HNOpcode_Usage[op]++;
 		
 		// Collect the OP
 		var opData = this.OPCODE[op];
@@ -510,7 +509,7 @@ GameBoyCore.prototype.executeIteration = function () {
 		//Execute Interrupt:
 		// Hugh added an extra check to this if in case an interrupt is fake then made the
 		// value get directly passed to interupt handler
-		var interrupts = this.memory[0xFFFF] & this.memory[0xFF0F];
+		interrupts = this.memory[0xFFFF] & this.memory[0xFF0F];
 		if (this.IME && (interrupts & 0x1F)) {
 		//if (this.IME) {
 			this.runInterrupt(interrupts);

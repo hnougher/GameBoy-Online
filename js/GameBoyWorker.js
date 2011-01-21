@@ -203,7 +203,7 @@ setInterval(function(){
 	HNExtra = 0;
 	
 	// Post the Op Usage Data
-	postMessage([ "HNOpcode_Usage", HNOpcode_Usage ]);
+	//postMessage([ "HNOpcode_Usage", HNOpcode_Usage ]);
 	},1000);
 
 
