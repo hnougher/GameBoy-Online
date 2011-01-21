@@ -214,7 +214,6 @@ function GameBoyCore(ROMImage) {
 	this.tileReadState = [];			// true if there are any images to be invalidated
 	this.windowSourceLine = 0;
 	this.colors = new Array(0x80EFFFDE, 0x80ADD794, 0x80529273, 0x80183442);	//"Classic" GameBoy palette colors.
-	this.frameCount = settings[12];		//Frame skip tracker
 	this.weaveLookup = [];
 	this.width = 160;
 	this.height = 144;

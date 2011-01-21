@@ -175,18 +175,7 @@ GameBoyCore.prototype.DisplayShowOff = function () {
 */
 GameBoyCore.prototype.drawToCanvas = function () {
 	//Draw the frame buffer to the canvas:
-	if (settings[4] == 0 || this.frameCount > 0) {
-		//Draw out the CanvasPixelArray data:
-		update_display();
-		if (settings[4] > 0) {
-			//Increment the frameskip counter:
-			this.frameCount -= settings[4];
-		}
-	}
-	else {
-		//Reset the frameskip counter:
-		this.frameCount += settings[12];
-	}
+	update_display();
 }
 
 GameBoyCore.prototype.invalidateAll = function (pal) {

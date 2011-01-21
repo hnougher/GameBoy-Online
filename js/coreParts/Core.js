@@ -330,7 +330,6 @@ GameBoyCore.prototype.returnFromState = function (returnedFrom) {
 	this.drawToCanvas();
 }
 GameBoyCore.prototype.start = function () {
-	settings[4] = 0;	//Reset the frame skip setting.
 	this.initializeLCDController();	//Compile the LCD controller functions.
 	this.initMemory();	//Write the startup memory.
 	this.ROMLoad();		//Load the ROM into memory and get cartridge information from it.
@@ -665,9 +664,8 @@ GameBoyCore.prototype.updateCore = function () {
 }
 
 GameBoyCore.prototype.clockUpdate = function () {
-	//We're tying in the same timer for RTC and frame skipping, since we can and this reduces load.
-	if (settings[7] || this.cTIMER) {
-		var timeElapsed = new Date().getTime() - new Date(this.lastIteration).getTime();	//Get the numnber of milliseconds since this last executed.
+	if (this.cTIMER) {
+		var timeElapsed = Date.now() - this.lastIteration;	//Get the numnber of milliseconds since this last executed.
 		if (this.cTIMER && !this.RTCHALT) {
 			//Update the MBC3 RTC:
 			this.RTCSeconds += timeElapsed / 1000;
@@ -688,19 +686,6 @@ GameBoyCore.prototype.clockUpdate = function () {
 				}
 			}
 		}
-		if (settings[7]) {
-			//Auto Frame Skip:
-			if (timeElapsed > settings[20]) {
-				//Did not finish in time...
-				if (settings[4] < settings[8]) {
-					settings[4]++;
-				}
-			}
-			else if (settings[4] > 0) {
-				//We finished on time, decrease frame skipping (throttle to somewhere just below full speed)...
-				settings[4]--;
-			}
-		}
-		this.lastIteration = new Date().getTime();
+		this.lastIteration = Date.now();
 	}
 }

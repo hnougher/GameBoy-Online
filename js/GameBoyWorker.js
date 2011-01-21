@@ -31,16 +31,15 @@ var settings = [						//Some settings.
 	false,								//1 Force Mono sound.
 	false,								//2 Give priority to GameBoy mode
 	[39, 37, 38, 40, 88, 90, 16, 13],	//3 Keyboard button map.
-	0,									//4 Frameskip Amount (Auto frameskip setting allows the script to change this.)
+	0,									//4 UNUSED Frameskip Amount (Auto frameskip setting allows the script to change this.)
 	false,								//5 Use the data URI BMP method over the canvas tag method?
 	[16, 12],							//6 How many tiles in each direction when using the BMP method (width * height).
-	//true,								//7 Auto Frame Skip
-	false,								//7 Auto Frame Skip
-	29,									//8 Maximum Frame Skip
+	false,								//7 UNUSED Auto Frame Skip
+	29,									//8 UNUSED Maximum Frame Skip
 	true,								//9 Override to allow for MBC1 instead of ROM only (compatibility for broken 3rd-party cartridges).
 	true,								//10 Override MBC RAM disabling and always allow reading and writing to the banks.
 	100,								//11 Audio granularity setting (Sampling of audio every x many machine cycles)
-	10,									//12 Frameskip base factor
+	10,									//12 UNUSED Frameskip base factor
 	17826,								//13 Target number of machine cycles per loop. (4,194,300 / 1000 * 17)
 	70000,								//14 Sample Rate
 	0x10,								//15 How many bits per WAV PCM sample (For browsers that fall back to WAV PCM generation)
@@ -104,7 +103,7 @@ var frameFinished;
 		// Run the frame
 		gameboy.run();
 		
-		frameFinished = (new Date()).getTime();
+		frameFinished = Date.now();
 		pauseLength = settings[20] - (frameFinished - frameStart);
 		
 		if( pauseLength > 0 || frameStart > blockMustBreakTime )
@@ -182,10 +181,10 @@ var HNEndTime;
 var HNExtra = 0;
 /*
 	HNCounter++;
-	HNStartTime = new Date();
+	HNStartTime = Date.now();
 	
 	
-	HNEndTime = new Date();
+	HNEndTime = Date.now();
 	HNTime += ( HNEndTime - HNStartTime );
 */
 
