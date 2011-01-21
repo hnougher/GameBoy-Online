@@ -76,7 +76,7 @@ onmessage = function( event )
 		
 		case "resumeEmulator":
 			gameboy.stopEmulator &= 1;
-			frameStart = gameboy.lastIteration = new Date().getTime();
+			frameStart = gameboy.lastIteration = Date.now();
 			cout("Starting the iterator.", 0);
 			//gbRunInterval = setInterval(continueCPU, settings[20]);
 			continueCPU();
@@ -133,7 +133,7 @@ function continueCPU()
 	// Run the frame
 	gameboy.run();
 	
-	frameFinished = (new Date()).getTime();
+	frameFinished = Date.now();
 	pauseLength = settings[20] - (frameFinished - frameStart);
 	
 	// Fix the pause time if less than zero

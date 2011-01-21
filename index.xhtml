@@ -7,8 +7,8 @@ DEBUG_MESSAGES = true;
 DEBUG_WINDOWING = false;
 </script>
 
-<script type="text/javascript" src="js/scale2x/HNScale2x.js"></script>
-<script type="text/javascript" src="js/scale2x/Scale2x_Worker.js"></script>
+<!-- script type="text/javascript" src="js/scale2x/HNScale2x.js"></script>
+<script type="text/javascript" src="js/scale2x/Scale2x_Worker.js"></script -->
 
 <script type="text/javascript" src="js/other/windowStack.js"></script>
 <script type="text/javascript" src="js/other/terminal.js"></script>
@@ -29,6 +29,8 @@ DEBUG_WINDOWING = false;
 
 <body>
 <div id="GameBoy" class="window">
+	<div id="title"></div>
+	<div id="port_title"></div>
 	<div class="menubar">
 		<span id="GameBoy_file_menu">File</span>
 		<span id="GameBoy_settings_menu">Settings</span>
@@ -83,6 +85,9 @@ DEBUG_WINDOWING = false;
 		<div class="setting"><span>Always allow reading and writing to the MBC banks:</span><input type="checkbox" checked="checked" id="mbc_enable_override"/></div>
 		<div class="setting"><span>Colorize Classic GameBoy Palettes:</span><input type="checkbox" checked="checked" id="enable_colorization"/></div>
 		<div class="setting"><span>Minimal view on fullscreen:</span><input type="checkbox" checked="checked" id="do_minimal"/></div>
+		<div class="setting"><span>Disallow Typed Arrays:</span><input type="checkbox" id="typed_arrays_disallow"/></div>
+		<div class="setting"><span>Software Resize:</span><input type="checkbox" id="software_resizing"/></div>
+		<div class="setting"><span>Software Scale2x Filter:</span><input type="checkbox" id="filter_scale2x"/></div>
 	</div>
 	<div class="button_rack">
 		<button id="settings_close_button" class="center">Close Settings</button>
@@ -179,25 +184,25 @@ catch (error) {
 		2, 2, 0, 0, 0, 0, 0, 2,		0, 0, 1, 0, 0, 0, 0, 2,  //F
 		
 /*	CB	0, 1, 2, 3, 4, 5, 6, 7,		8, 9, A, B, C, D, E, F	*/
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //0
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //1
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //2
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //3
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //0
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //1
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //2
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //3
 		
-		1, 1, 1, 1, 1, 1, 1, 1,		0, 0, 0, 0, 0, 0, 0, 0,  //4
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //5
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //6
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //7
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //4
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //5
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //6
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //7
 		
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //8
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //9
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //A
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //B
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //8
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //9
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //A
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //B
 		
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //C
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //D
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0,  //E
-		0, 0, 0, 0, 0, 0, 0, 0,		0, 0, 0, 0, 0, 0, 0, 0  //F
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //C
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //D
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2,  //E
+		2, 2, 2, 2, 2, 2, 2, 2,		2, 2, 2, 2, 2, 2, 2, 2  //F
 		);
 	
 	var update_HNOpcode_Usage = function()

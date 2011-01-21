@@ -24,6 +24,7 @@ ob_start('ob_gzhandler');
  * GNU General Public License for more details.
  *
  */
+ //"use strict";
  /**
  *TODO:
 	- Working On Right Now:
@@ -285,6 +286,31 @@ GameBoyCore.prototype.__defineSetter__("registerE", function(val){
 	if( (val & 0xFF) != val )
 		throw( new Error( "registerE was set to a value outside allowed range! '" + val + "'" ));
 	this._registerE = val;
+	});
+// Flags
+GameBoyCore.prototype.__defineGetter__("FZero", function(){ return this._FZero; });
+GameBoyCore.prototype.__defineSetter__("FZero", function(val){
+	if( typeof val != "boolean" )
+		throw( new Error( "FZero was not boolean! '" + val + "'" ));
+	this._FZero = val;
+	});
+GameBoyCore.prototype.__defineGetter__("FSubtract", function(){ return this._FSubtract; });
+GameBoyCore.prototype.__defineSetter__("FSubtract", function(val){
+	if( typeof val != "boolean" )
+		throw( new Error( "FSubtract was not boolean! '" + val + "'" ));
+	this._FSubtract = val;
+	});
+GameBoyCore.prototype.__defineGetter__("FHalfCarry", function(){ return this._FHalfCarry; });
+GameBoyCore.prototype.__defineSetter__("FHalfCarry", function(val){
+	if( typeof val != "boolean" )
+		throw( new Error( "FHalfCarry was not boolean! '" + val + "'" ));
+	this._FHalfCarry = val;
+	});
+GameBoyCore.prototype.__defineGetter__("FCarry", function(){ return this._FCarry; });
+GameBoyCore.prototype.__defineSetter__("FCarry", function(val){
+	if( typeof val != "boolean" )
+		throw( new Error( "FCarry was not boolean! '" + val + "'" ));
+	this._FCarry = val;
 	});*/
 
 
