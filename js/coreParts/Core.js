@@ -436,7 +436,6 @@ GameBoyCore.prototype.run = function () {
 					this.executeIteration();
 				}
 				else {						//If we bailed out of a halt because the iteration ran down its timing.
-					HNOpcode_Usage[0x76]++;
 					var opData = this.OPCODE[0x76];
 					this.CPUTicks = opData[1];
 					opData[0](this);

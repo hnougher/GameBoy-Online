@@ -15,6 +15,19 @@ var GameBoyCore = function( canvas, canvasAlt, ROM )
 	this.canvas.height = 144;
 	this.canvas.style.visibility = "visible";
 	
+	// Frame Buffer and set event to call the frame update to screen
+	this.frameBuffer;
+	this.frameBeenDisplayed = true;
+	this.useMozFrameAnimation = (typeof window.mozRequestAnimationFrame == "function");
+	if (this.useMozFrameAnimation) {
+		// Mozilla frame based display
+		window.addEventListener("MozBeforePaint", function () { self.showFrame(); }, false);
+	}
+	else {
+		// For the other browsers
+		window.setInterval(function () { self.showFrame(); }, 33);
+	}
+	
 	// Initialize it
 	this.worker.postMessage(["init", ROM]);
 };
@@ -25,13 +38,11 @@ var GameBoyCore = function( canvas, canvasAlt, ROM )
 	gameboy.ctx.putImageData( imageData, 0, 0 );
 	});*/
 
-GameBoyCore.prototype.onmessage = function(event)
-{
+GameBoyCore.prototype.onmessage = function (event) {
 	var args = event.data;
-	switch( args[0] )
-	{
+	switch (args[0]) {
 		case "cout":
-			cout( args[1], args[2] );
+			cout(args[1], args[2]);
 			break;
 		
 		case "draw_blank":
@@ -40,18 +51,23 @@ GameBoyCore.prototype.onmessage = function(event)
 			break;
 		
 		case "update_display":
-			var frameBuffer = args[1];
+			/*var frameBuffer = args[1];
 			var imageData = this.ctx.getImageData(0, 0, 160, 144);
-			var canvasData = imageData.data;
 			var canvasIndex = 0;
 			for (var i = 0; i < frameBuffer.length; i++) {
-				canvasData[canvasIndex++] = (frameBuffer[i] >> 16) & 0xFF;	//Red
-				canvasData[canvasIndex++] = (frameBuffer[i] >> 8) & 0xFF;	//Green
-				canvasData[canvasIndex++] = frameBuffer[i] & 0xFF;			//Blue
+				imageData.data[canvasIndex++] = (frameBuffer[i] >> 16) & 0xFF;	//Red
+				imageData.data[canvasIndex++] = (frameBuffer[i] >> 8) & 0xFF;	//Green
+				imageData.data[canvasIndex++] = frameBuffer[i] & 0xFF;			//Blue
 				canvasIndex++; // Alpha is ignored
 			}
-			this.ctx.putImageData(imageData, 0, 0);
+			this.ctx.putImageData(imageData, 0, 0);*/
 			//Scale2x.scale2xID( args[1], "gameboy" );
+			
+			this.frameBuffer = args[1];
+			this.frameBeenDisplayed = false;
+			if (this.useMozFrameAnimation) {
+				window.mozRequestAnimationFrame();
+			}
 			break;
 		
 		case "HNOpcode_Usage":
@@ -65,32 +81,52 @@ GameBoyCore.prototype.onmessage = function(event)
 	}
 };
 
-GameBoyCore.prototype.onerror = function(error)
-{
+/**
+* This method is to be called at the screen refresh rate of the host machine
+* if possible. If not then just call after each time onmessage.update_display
+* is sent a frame for display.
+*/
+GameBoyCore.prototype.showFrame = function () {
+	// If the frame has already been displayed then we dont have to display it again
+	if (this.frameBeenDisplayed) {
+		return;
+	}
+	
+	var imageData = this.ctx.getImageData(0, 0, 160, 144);
+	var canvasIndex = 0;
+	for (var i = 0; i < this.frameBuffer.length; i++) {
+		imageData.data[canvasIndex++] = (this.frameBuffer[i] >> 16) & 0xFF;	//Red
+		imageData.data[canvasIndex++] = (this.frameBuffer[i] >> 8) & 0xFF;	//Green
+		imageData.data[canvasIndex++] = (this.frameBuffer[i] & 0xFF);		//Blue
+		canvasIndex++; // Alpha is ignored
+	}
+	this.ctx.putImageData(imageData, 0, 0);
+	
+	// Clear the frame buffer since we will not use it again
+	this.frameBuffer = undefined;
+	this.frameBeenDisplayed = true;
+};
+
+GameBoyCore.prototype.onerror = function (error) {
 	throw error;
 };
 
-GameBoyCore.prototype.start = function()
-{
+GameBoyCore.prototype.start = function () {
 	this.worker.postMessage(["start"]);
 };
 
-GameBoyCore.prototype.run = function()
-{
+GameBoyCore.prototype.run = function () {
 	this.worker.postMessage(["run"]);
 };
 
-GameBoyCore.prototype.resumeEmulator = function()
-{
+GameBoyCore.prototype.resumeEmulator = function () {
 	this.worker.postMessage(["resumeEmulator"]);
 };
 
-GameBoyCore.prototype.stopEmulator = function()
-{
+GameBoyCore.prototype.stopEmulator = function () {
 	this.worker.postMessage(["stopEmulator"]);
 };
 
-GameBoyCore.prototype.JoyPadEvent = function( keycode, isDown )
-{
+GameBoyCore.prototype.JoyPadEvent = function (keycode, isDown) {
 	this.worker.postMessage(["JoyPadEvent", keycode, isDown]);
 };

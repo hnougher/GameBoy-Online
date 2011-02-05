@@ -13,41 +13,34 @@ var supportTypedArray = (
 	);
 supportTypedArray = false;
 
-/*// Flags from http://wikiti.brandonw.net/?title=Z80_Instruction_Set
-var S_FLAG = 0x80;	// Bit 7: accumulator or high byte for 16-bit operations
-var Z_FLAG = 0x40;	// set if result is zero
-var X_FLAG = 0x20;	// Bit 5: undocumented
-var H_FLAG = 0x10;	// Bit 4: half-carry / carry of low nibble
-var Y_FLAG = 0x08;	// Bit 3: undocumented
-var P_FLAG = 0x04;	// parity or overflow, always specified
-var N_FLAG = 0x02;	// negative, set if previous op was subtraction, always specified
-var C_FLAG = 0x01;	// Bit 8: carry*/
-
 
 var gameboy;
+var loopsPerSec = 59.9802654;
 var settings = [						//Some settings.
-	//true, 							//0 Turn on sound.
 	false, 								//0 Turn on sound.
 	false,								//1 Force Mono sound.
 	false,								//2 Give priority to GameBoy mode
 	[39, 37, 38, 40, 88, 90, 16, 13],	//3 Keyboard button map.
 	0,									//4 UNUSED Frameskip Amount (Auto frameskip setting allows the script to change this.)
-	false,								//5 Use the data URI BMP method over the canvas tag method?
-	[16, 12],							//6 How many tiles in each direction when using the BMP method (width * height).
+	false,								//5 UNUSED Use the data URI BMP method over the canvas tag method?
+	[16, 12],							//6 UNUSED How many tiles in each direction when using the BMP method (width * height).
 	false,								//7 UNUSED Auto Frame Skip
 	29,									//8 UNUSED Maximum Frame Skip
 	true,								//9 Override to allow for MBC1 instead of ROM only (compatibility for broken 3rd-party cartridges).
 	true,								//10 Override MBC RAM disabling and always allow reading and writing to the banks.
 	100,								//11 Audio granularity setting (Sampling of audio every x many machine cycles)
 	10,									//12 UNUSED Frameskip base factor
-	17826,								//13 Target number of machine cycles per loop. (4,194,300 / 1000 * 17)
+	//17826,								//13 Target number of machine cycles per loop. (4,194,300 / 1000 * 17)
+	Math.round(4194300/4/loopsPerSec),	//13 Target number of machine cycles per loop.
 	70000,								//14 Sample Rate
 	0x10,								//15 How many bits per WAV PCM sample (For browsers that fall back to WAV PCM generation)
 	true,								//16 Use the GBC BIOS?
 	true,								//17 Colorize GB mode?
 	512,								//18 Sample size for webkit audio.
 	false,								//19 Whether to display the canvas at 144x160 on fullscreen or as stretched.
-	17									//20 Interval for the emulator loop.
+	//17									//20 Interval for the emulator loop.
+	1000/loopsPerSec					//20 Interval for the emulator loop.
+	//0									//20 Interval for the emulator loop.
 	];
 var gbRunTimeout;
 
@@ -72,15 +65,17 @@ onmessage = function (event) {
 		
 		case "resumeEmulator":
 			gameboy.stopEmulator &= 1;
-			frameStart = gameboy.lastIteration = Date.now();
+			gameboy.lastIteration = Date.now();
+			frameStart = Date.now();
 			cout("Starting the iterator.", 0);
-			//gbRunInterval = setInterval(continueCPU, settings[20]);
 			continueCPU();
+			//setInterval(continueCPU, settings[20]);
 			break;
 		
 		case "stopEmulator":
 			gameboy.stopEmulator |= 2;
-			clearTimeout(gbRunTimeout);
+			frameStart += 1000*60*60*24*365; // One Years Time, hopefully never reached
+			clearTimeout(gbRunTimeout); // This does not stop it sometimes, hence the extended frameStart
 			break;
 		
 		case "JoyPadEvent":
@@ -93,53 +88,22 @@ onmessage = function (event) {
 var frameStart;
 var pauseLength;
 var frameFinished;
-/** This is for fastest possible since it will only react to events at one sec intervals */
-/*function continueCPU()
-{
-	var blockMustBreakTime = frameStart + 1000;
-
-	for( ; ; )
-	{
-		// Run the frame
-		gameboy.run();
-		
-		frameFinished = Date.now();
-		pauseLength = settings[20] - (frameFinished - frameStart);
-		
-		if( pauseLength > 0 || frameStart > blockMustBreakTime )
-		{
-			// Fix the pause time if less than zero
-			pauseLength = Math.max( 0, pauseLength );
-			
-			// Record when the next frame will start
-			frameStart = frameFinished + pauseLength;
-			
-			// There is a pause so we use a timeout and leave loop
-			gbRunTimeout = setTimeout( continueCPU, pauseLength );
-			return;
-		}
-		
-		// Record when the next frame will start
-		frameStart = frameFinished;
-	}
-}*/
-/** This one allows events after every frame */
 function continueCPU()
 {
 	// Run the frame
 	gameboy.run();
 	
+	// Record when the next frame will start
+	frameStart += settings[20];
+	
 	frameFinished = Date.now();
-	pauseLength = settings[20] - (frameFinished - frameStart);
+	pauseLength = frameStart - frameFinished;
 	
 	// Fix the pause time if less than zero
-	pauseLength = Math.max( 0, pauseLength );
-	
-	// Record when the next frame will start
-	frameStart = frameFinished + pauseLength;
+	pauseLength = Math.max(0, pauseLength);
 	
 	// There is a pause so we use a timeout and leave loop
-	gbRunTimeout = setTimeout( continueCPU, pauseLength );
+	gbRunTimeout = setTimeout(continueCPU, pauseLength | 0);
 }
 
 
@@ -203,9 +167,6 @@ setInterval(function(){
 	HNCounter = 0;
 	HNTime = 0;
 	HNExtra = 0;
-	
-	// Post the Op Usage Data
-	//postMessage([ "HNOpcode_Usage", HNOpcode_Usage ]);
 	},1000);
 
 
@@ -215,17 +176,15 @@ setInterval(function(){
 * Creates an array using the most efficient method it can.
 * @author Hugh Nougher <hughnougher@gmail.com>
 */
-var ArrayCreate = function( length, type, defaultValue )
-{
+var ArrayCreate = function (length, type, defaultValue) {
 	var a;
 	
 	// If typed arrays are not supported then we must go straight for a normal one
-	if( !supportTypedArray )
+	if (!supportTypedArray)
 		type = "";
 	
 	// Create the array
-	switch( type )
-	{
+	switch (type) {
 		case "UI8": // Unsigned 8bit Integer
 			a = new Uint8Array(length);
 			break;
@@ -255,32 +214,13 @@ var ArrayCreate = function( length, type, defaultValue )
 	}
 	
 	// If a default value is given then we must set all values in array to it
-	if( defaultValue != undefined && ( a instanceof Array || defaultValue !== 0 ) )
-	{
-		for( var i = 0; i < length; i++ )
+	if (defaultValue != undefined && (a instanceof Array || defaultValue !== 0)) {
+		for (var i = 0; i < length; i++)
 			a[i] = defaultValue;
 	}
 	
 	return a;
 };
-
-// Calculate Parity for a Byte
-// Using IF and XOR was almost as fast as array lookup in FF4b7.
-// Using IF and XOR was faster than "evenParity = !evenParity" also.
-// Using ++ was slowest. Having 0x1 in the initial var was faster.
-/*var parityByte = function(b)
-{
-	var evenParity = 0x1;
-	if (b & 0x01) evenParity ^= 1;
-	if (b & 0x02) evenParity ^= 1;
-	if (b & 0x04) evenParity ^= 1;
-	if (b & 0x08) evenParity ^= 1;
-	if (b & 0x10) evenParity ^= 1;
-	if (b & 0x20) evenParity ^= 1;
-	if (b & 0x40) evenParity ^= 1;
-	if (b & 0x80) evenParity ^= 1;
-	return evenParity;
-}*/
 
 
 
